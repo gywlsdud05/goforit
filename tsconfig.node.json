@@ -1,0 +1,15 @@
+// tsconfig.node.json
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+      "composite": true,
+      "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+      "target": "ES2020",
+      "module": "CommonJS",
+      "skipLibCheck": true,
+      "outDir": "./dist",
+      "rootDir": "./src"
+    },
+    "include": ["src"]
+  }
+  
