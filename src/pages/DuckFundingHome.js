@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-
 const DuckFundingHome = () => {
-    const navigate = useNavigate();
+    
  
-    const navigateToLoginPage = () => {
-      navigate("/LoginPage");
-    };
-
-    const navigateToSignUpPage = () => {
-        navigate("/SignUpPage");
-      };
+  
 
 
 
@@ -70,24 +63,7 @@ const DuckFundingHome = () => {
 
   return (
     <div className="duckfunding-home">
-      <header>
-        <div className="logo">wadiz</div>
-        <nav>
-          <a href="#">오픈예정</a>
-          <a href="#">펀딩+</a>
-          <a href="#">프리오더</a>
-          <a href="#">스토어</a>
-          <a href="#">더보기 <ChevronDown size={16} /></a>
-        </nav>
-        <div className="search-bar">
-          <input type="text" placeholder="새로운 일상이 필요하신가요?" />
-          <Search size={20} />
-        </div>
-        <div className="auth-buttons">
-          <button onClick={navigateToLoginPage}>로그인</button>
-          <button className="signup" onClick={navigateToSignUpPage}>회원가입</button>
-        </div>
-      </header>
+     
 
       <main>
         <div className="banner-slider">
@@ -141,57 +117,13 @@ const DuckFundingHome = () => {
         </div>
       </main>
 
-      <style jsx>{`
+      <style>{`
         .duckfunding-home {
           font-family: 'Noto Sans KR', sans-serif;
           max-width: 1200px;
           margin: 0 auto;
         }
 
-        header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 20px 0;
-        }
-
-        .logo {
-          font-size: 24px;
-          font-weight: bold;
-        }
-
-        nav a {
-          margin-right: 20px;
-          text-decoration: none;
-          color: #333;
-        }
-
-        .search-bar {
-          display: flex;
-          align-items: center;
-          border: 1px solid #ddd;
-          border-radius: 20px;
-          padding: 5px 15px;
-        }
-
-        .search-bar input {
-          border: none;
-          outline: none;
-          width: 200px;
-        }
-
-        .auth-buttons button {
-          margin-left: 10px;
-          padding: 8px 16px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-
-        .auth-buttons .signup {
-          background-color: #00c4c4;
-          color: white;
-        }
 
         .banner-slider {
           position: relative;
