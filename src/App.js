@@ -1,73 +1,74 @@
-import './Header.css'; // CSS 파일을 가져옵니다.
-
-import React, {useEffect} from "react" ;
-import {Routes, Route, Link} from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
-import useAuthStore from './store/useAuthStore';
-import WolrdPage from "./pages/DuckWolrdPage"
-import AuthCallback from "./components/authCallback"
-import DuckFundingHome from "./pages/DuckFundingHome"
-import Carousel from "./pages/Example"
-import LoginPage from "./pages/LoginPage"
-import SignupForm from "./pages/SignUpPage"
-import ProductPage from "./pages/ProductPage"
-import ProductWritePage from "./pages/ProductWritePage"
-import PaymentSuccessPage from "./pages/PaymentSuccessPage"
-import CompanyFooter from "./pages/CompanyFooter";
+import React, { useEffect , useCallback } from "react";
+import { Outlet, useLocation, ScrollRestoration } from "react-router-dom";
+import { SessionContextProvider } from '@supabase/auth-helpers-react'
+import { createClient } from '@supabase/supabase-js'
+import { supabase } from './supabase.client';
 import Header from "./pages/Header";
-import { GoogleOAuthProvider } from '@react-oauth/google';
-
-
+import useAuthStore from './store/useAuthStore';
+import CompanyFooter from './pages/CompanyFooter';
+import { debounce } from 'lodash';
 
 const App = () => {
-  const { accessToken, refreshAccessToken, logout } = useAuthStore((state) => ({
-    accessToken: state.accessToken,
-    refreshAccessToken: state.refreshAccessToken,
-    logout: state.logout,
-  }));
+  const { initializeAuth } = useAuthStore();
+  const location = useLocation();
 
   useEffect(() => {
-    const handleTokenRefresh = async () => {
-      if (!accessToken) {
-        await refreshAccessToken();
-      }
-    };
+    initializeAuth();
+  }, []);
 
-    handleTokenRefresh();
-  }, [accessToken, refreshAccessToken]);
+  const saveScrollPosition = useCallback(debounce(() => {
+    const currentPosition = window.scrollY;
+    console.log("Saving scroll position:", currentPosition);
+    localStorage.setItem('scrollPosition', currentPosition.toString());
+  }, 100), []);
+
+  useEffect(() => {
+    console.log("Location changed:", location.pathname);
+
+    if (location.hash) {
+      console.log("Scrolling to hash:", location.hash);
+      const element = document.querySelector(location.hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      window.scrollTo(0, 0);
+    }
+
+    window.addEventListener('scroll', saveScrollPosition);
+    return () => {
+      window.removeEventListener('scroll', saveScrollPosition);
+      saveScrollPosition.cancel();
+    };
+  }, [location, saveScrollPosition]);
+
+  useEffect(() => {
+    const savedPosition = localStorage.getItem('scrollPosition');
+    if (savedPosition) {
+      window.scrollTo(0, parseInt(savedPosition, 10));
+    }
+  }, []);
+
+  const handleScrollRestoration = () => {
+    console.log("ScrollRestoration triggered");
+  }
+
+  console.log("ScrollY:", window.scrollY);
 
   return (
-    <GoogleOAuthProvider clientId="957039910040-et0rf32k194sugfs0mse3qvbmvr371hg.apps.googleusercontent.com">
     <div className="App">
-
-      <div>
-      {accessToken ? (
-        <>
-          <h1>Welcome back!</h1>
-          <button onClick={logout}>Logout</button>
-        </>
-      ) : (
-        <h1>not login</h1>
-      )}
+      <SessionContextProvider supabaseClient={supabase}>
+        <Header />
+        <Outlet />
+        <ScrollRestoration
+          getKey={(location, matches) => {
+            console.log("ScrollRestoration getKey:", location.pathname, matches);
+            return location.pathname + (location.search || "");
+          }}
+        />
+        <CompanyFooter />
+      </SessionContextProvider>
     </div>
-    <Header/>
-      <Routes>
-       
-        <Route path="/" element={<WolrdPage/>}/>
-        <Route path="/DuckFundingHome" element={<DuckFundingHome/>}/>
-        <Route path="/example" element={<Carousel/>}/>
-        <Route path="/LoginPage" element={<LoginPage/>}/>
-        <Route path="/SignUpPage" element={<SignupForm/>}/>
-        <Route path="/ProductPage/:id" element={<ProductPage/>}/>
-        <Route path="/ProductWritePage" element={<ProductWritePage/>}/>
-        <Route path="/payment-success" element={<PaymentSuccessPage/>}/>
-        <Route path="/authCallback" element={<AuthCallback/>}/>
-      </Routes>
-      <CompanyFooter/>
-    </div>
-    </GoogleOAuthProvider>
   );
 }
 

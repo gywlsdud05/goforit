@@ -1,0 +1,109 @@
+  .duckfundingHome {
+    font-family: 'Noto Sans KR', sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .productGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  .productItem {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .productImage {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+
+  .likeButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    padding: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+   .likeButton:hover {
+    transform: scale(1.1);
+  }
+
+  .likeButton.liked {
+    background-color: #ff4081;
+  }
+
+  .likeButton.liked svg {
+    stroke: white;
+  }
+
+  .productInfo {
+    padding: 15px;
+  }
+
+  .productInfo h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .productStats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+
+  .percentage {
+    color: #00c4c4;
+    font-weight: bold;
+  }
+
+  .remaining {
+    color: #666;
+  }
+
+  .backers {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .noProductsMessage {
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+  }
+  .loadingMessage {
+    color: #666;
+  }
+  .errorMessage {
+    color: red;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .allLoadedMessage {
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+    color: #666;
+  }
+
+   .errorMessage button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }

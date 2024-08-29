@@ -14,30 +14,35 @@ const SignupForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-
-
+  const navigate = useNavigate();
 
   const generateIdenticon = (inputString) => {
     const hash = new Identicon(inputString).toString(); // Identicon 생성
     return `data:image/png;base64,${hash}`; // Base64로 인코딩된 이미지 데이터 반환
   };
 
- // 구글 로그인 시작 함수
-const handleGoogleSignUp = async () => {
-  try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/authCallback`
-      }
-    });
 
-    if (error) throw error;
-    window.location.href = data.url;
-  } catch (error) {
-    console.error('Google sign up error:', error.message);
-  }
-};
+  const handleSocialLogin = async (provider) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/AuthCallback`
+        }
+      });
+
+      if (error) throw error;
+      window.location.href = data.url;
+    } catch (error) {
+      console.error(`${provider} login error:`, error.message);
+    }
+  };
+
+  const handleKakaoLogin = () => handleSocialLogin('kakao');
+  const handleNaverLogin = () => handleSocialLogin('naver');
+  const handleGoogleLogin = () => handleSocialLogin('google');
+  const handleFacebookLogin = () => handleSocialLogin('facebook');
+  const handleAppleLogin = () => handleSocialLogin('apple');
 
       const onSubmit = async (data) => {
         const { email, nickname, password } = data; // 폼 데이터에서 email과 nickname 추출
@@ -77,26 +82,26 @@ const handleGoogleSignUp = async () => {
         <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
           <img src="/api/placeholder/120/40" alt="Wadiz logo" className="mb-8" />
 
-          <button className="w-full bg-yellow-400 text-black py-3 rounded-md mb-3 flex items-center justify-center">
+          <button onClick={handleKakaoLogin} className="w-full bg-yellow-400 text-black py-3 rounded-md mb-3 flex items-center justify-center">
             <span className="mr-2">🗨️</span>
             카카오로 시작하기
           </button>
 
-          <button className="w-full bg-green-500 text-white py-3 rounded-md mb-8 flex items-center justify-center">
+          <button onClick={handleNaverLogin}className="w-full bg-green-500 text-white py-3 rounded-md mb-8 flex items-center justify-center">
             <span className="font-bold mr-2">N</span>
             네이버로 시작하기
           </button>
           <div className="flex justify-center space-x-4 w-full">
             <button
-              onClick={handleGoogleSignUp}
+              onClick={handleGoogleLogin}
               className="p-3 border border-gray-300 rounded-full"
             >
               <FontAwesomeIcon icon={faGoogle} size="lg" />
             </button>
-            <button className="p-3 border border-gray-300 rounded-full bg-blue-600">
+            <button onClick={handleFacebookLogin} className="p-3 border border-gray-300 rounded-full bg-blue-600">
               <FontAwesomeIcon icon={faFacebook} size="lg" color="white" />
             </button>
-            <button className="p-3 border border-gray-300 rounded-full bg-black">
+            <button onClick={handleAppleLogin} className="p-3 border border-gray-300 rounded-full bg-black">
               <Apple size={24} color="white" />
             </button>
           </div>

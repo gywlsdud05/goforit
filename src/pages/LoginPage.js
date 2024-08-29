@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Apple, Facebook } from 'lucide-react';
-import {Routes, Route, Link} from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import {Routes, Route, Link, useNavigate } from "react-router-dom";
 import { supabase } from '../supabase.client';
 import useAuthStore from '../store/useAuthStore';
 
@@ -9,13 +8,13 @@ import useAuthStore from '../store/useAuthStore';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, user, error, googleLogin } = useAuthStore((state) => ({
+  const { login, error } = useAuthStore((state) => ({
     login: state.login,
-    googleLogin: state.googleLogin,
-    user: state.user,
+    error: state.error,
   }));
 
   const navigate = useNavigate(); // useNavigate 훅 추가
+
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     try {
@@ -26,41 +25,26 @@ const LoginPage = () => {
         console.error('Error logging in:', error.message);
       }
   };
-  // const handleGoogleLogin = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     await googleLogin();
-  //       console.log('Successfully logged in!');
-  //       //navigate('/DuckFundingHome'); // 로그인 후 홈으로 리디렉션
-  //     } catch (error) {
-  //       console.error('Error logging in:', error.message);
-  //     }
-  // };
-  // const handleGoogleLogin = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const { url } = await googleLogin();
-  //     window.location.href = url;
-  //   } catch (error) {
-  //     console.error('Error starting Google login:', error.message);
-  //   }
-  // };
-  const handleGoogleLogin = async (e) => {
-    e.preventDefault();
+
+ const handleSocialLogin = async (provider) => {
     try {
-      const result = await googleLogin();
-      console.log('Google login result:', result);
-      if (result && result.url) {
-        window.location.href = result.url;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/AuthCallback`
+        }
+      });
+
+      if (error) throw error;
+      if (data && data.url) {
+        window.location.href = data.url;
       } else {
-        console.error('Google login failed: No URL returned');
+        console.error(`${provider} login failed: No URL returned`);
       }
     } catch (error) {
-      console.error('Error starting Google login:', error);
+      console.error(`Error starting ${provider} login:`, error.message);
     }
   };
-
-
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
@@ -92,15 +76,15 @@ const LoginPage = () => {
           이메일로 로그인하기
         </button>
       </form>
-      <button className="w-full py-2 px-4 bg-yellow-400 text-black rounded hover:bg-yellow-500 mb-4 flex items-center justify-center">
+      <button  onClick={() => handleSocialLogin('kakao')} className="w-full py-2 px-4 bg-yellow-400 text-black rounded hover:bg-yellow-500 mb-4 flex items-center justify-center">
         <span className="mr-2">🗨️</span> 카카오로 시작하기
       </button>
-      <button className="w-full py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600 mb-4 flex items-center justify-center">
+      <button  onClick={() => handleSocialLogin('naver')} className="w-full py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600 mb-4 flex items-center justify-center">
         <span className="mr-2 font-bold text-lg">N</span> 네이버로 시작하기
       </button>
       <div className="flex justify-center space-x-4 mt-6">
         <button 
-        onClick={handleGoogleLogin}
+         onClick={() => handleSocialLogin('google')}
         className="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
           <svg className="w-6 h-6" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -110,10 +94,10 @@ const LoginPage = () => {
             <path fill="none" d="M1 1h22v22H1z" />
           </svg>
         </button>
-        <button className="p-2 rounded-full bg-blue-600 hover:bg-blue-700">
+        <button  onClick={() => handleSocialLogin('facebook')} className="p-2 rounded-full bg-blue-600 hover:bg-blue-700">
           <Facebook className="w-6 h-6 text-white" />
         </button>
-        <button className="p-2 rounded-full bg-gray-900 hover:bg-black">
+        <button  onClick={() => handleSocialLogin('apple')}className="p-2 rounded-full bg-gray-900 hover:bg-black">
           <Apple className="w-6 h-6 text-white" />
         </button>
       </div>

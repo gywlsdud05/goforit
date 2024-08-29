@@ -1,256 +1,353 @@
-import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
+// 필요한 module과 component들을 import합니다.
+import styles from './DuckFundingHome.css';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Search, ChevronDown, ChevronLeft, ChevronRight, Heart, ArrowUp } from 'lucide-react';
+import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from '../supabase.client';
+import useAuthStore from '../store/useAuthStore';
+import InfiniteScroll from 'react-infinite-scroller';
+import SkeletonProduct from './SkeletonProduct';
+import useScrollPosition from '../components/useScrollPosition';
+import SlideComponent from './SlideComponent';
+
 const DuckFundingHome = () => {
-    
- 
-  
+  // 상태 변수들을 선언합니다.
+  const [products, setProducts] = useState([]); // 제품 목록
+  const [error, setError] = useState(null); // error 상태
+  const [page, setPage] = useState(0); // 현재 page number
+  const [totalProducts, setTotalProducts] = useState(null); // 총 제품 수
+  const [showScrollTop, setShowScrollTop] = useState(false); // 스크롤 탑 버튼 표시 여부
+  const [likedProducts, setLikedProducts] = useState(new Set()); // 좋아요 한 제품 목록
+  const [loadingMore, setLoadingMore] = useState(false); // 추가 로딩 중 여부
+  const [hasMore, setHasMore] = useState(true); // 더 불러올 제품이 있는지 여부
+  const [isLoading, setIsLoading] = useState(true); // 초기 로딩 상태
 
+  // 라우팅 및 인증 관련 훅을 사용합니다.
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, initializeAuth } = useAuthStore();
+  const { scrollToTop } = useScrollPosition('duckFundingScrollPosition');
 
+  // 상수를 정의합니다.
+  const PRODUCTS_PER_PAGE = 8;
 
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const slides = [
-    { image: "https://catseye-ent.com/web/product/medium/202310/2c34975cd0a5281de76bd245bfcd9560.jpg", title: "사고력부터 집문능력까지", subtitle: "하루 10분만 투자하세요" },
-    { image: "https://health.chosun.com/site/data/img_dir/2023/06/23/2023062301899_0.jpg", title: "신선집중 스페셜 기획전", subtitle: "핫 이슈 프로젝트를 만나보세요!" },
-    { image: "/api/placeholder/1200/400", title: "단 일주일 동안만 열리는", subtitle: "한여름의 캠핑" },
-  ];
-
-  const categories = [
-    "전체", "BEST 펀딩", "테크·가전", "패션", "뷰티", "홈·리빙", "스포츠·모빌리티", "푸드", "도서·컨텐츠", "클래스", "디자인", "반려동물", "아트", "캐릭터·굿즈", "여행·음악", "기타"
-  ];
-
-  const products = [
-    { image: "https://catseye-ent.com/web/product/medium/202310/2c34975cd0a5281de76bd245bfcd9560.jpg", title: "5-13세 취부모님! 망설이면 놓여요. '이거' 하나로 끝나는 유튜 교육", percentage: "10,439%", remaining: "8일 남음", backers: "5,219명" },
-    { image: "https://health.chosun.com/site/data/img_dir/2023/06/23/2023062301899_0.jpg", title: "피부 멜로틴 몰려 주름, 모공의 근본을 개선하는 비건 PDRN 앰플", percentage: "4,973%", remaining: "5일 남음", backers: "2,486명" },
-    // ... 나머지 6개의 제품 정보를 여기에 추가 ...
-  ];
-
-
-  const nextSlide = () => {
-    if (!isTransitioning) {
-      setIsTransitioning(true);
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+  // 더 많은 제품을 로드하는 함수입니다.
+  const loadMoreProducts = () => {
+    if (loadingMore) {
+      console.log('Already loading more products, skipping fetch');
+      return;
+    }
+    if (!loadingMore && hasMore) {
+      console.log('Loading more products');
+      fetchProducts(page, likedProducts);
+      console.log('loadMoreProducts called', { loadingMore, hasMore, page });
     }
   };
 
-  const prevSlide = () => {
-    if (!isTransitioning) {
-      setIsTransitioning(true);
-      setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-    }
-  };
-
-  // 자동 슬라이드 전환을 위한 useEffect
+  // component가 마운트될 때 인증을 초기화합니다.
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isTransitioning) {
-        setIsTransitioning(true);
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
+    const init = async () => {
+      console.log('Component mounted');
+      await initializeAuth();
+      console.log('Auth initialized');
+    };
+
+    init();
+  }, []);
+
+  // 제품을 가져오는 function입니다.
+  const fetchProducts = useCallback(async (pageNumber) => {
+    console.log(`Attempting to fetch products for page ${pageNumber}`);
+    setLoadingMore(true);
+    setError(null);
+
+    try {
+      const currentPage = pageNumber;
+      const from = currentPage * PRODUCTS_PER_PAGE;
+      const to = from + PRODUCTS_PER_PAGE - 1;
+
+      console.log(`Fetching products from ${from} to ${to}`);
+
+      // 전체 제품 수를 먼저 확인합니다.
+      const { count } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+
+      console.log(`Total products count: ${count}`);
+      setTotalProducts(count);
+
+      // 남은 product가 없으면 여기서 중단합니다.
+      if (from >= count) {
+        console.log('No more products to fetch');
+        setHasMore(false);
+        return;
       }
-    }, 3000); // 3초마다 자동 슬라이드
 
-    return () => clearInterval(interval); // 컴포넌트 언마운트 시 인터벌 정리
-  }, [isTransitioning, slides.length]);
+      // product data를 가져옵니다.
+      const { data, error } = await supabase
+        .from('products')
+        .select(`*`)
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
-  // 전환이 완료된 후 상태를 업데이트하기 위한 useEffect
-  useEffect(() => {
-    if (isTransitioning) {
-      const timer = setTimeout(() => setIsTransitioning(false), 500); // 전환 시간 (0.5초)
-      return () => clearTimeout(timer); // 타이머 정리
+      if (error) throw error;
+
+      console.log(`Fetched ${data.length} products`);
+      setTotalProducts(count);
+
+      // 사용자가 login 한 경우에만 좋아요 정보를 가져옵니다.
+      let userLikes = new Set();
+      if (user) {
+        const { data: likesData, error: likesError } = await supabase
+          .from('likes')
+          .select('product_id')
+          .eq('user_id', user.user_id);
+
+        if (likesError) throw likesError;
+
+        userLikes = new Set(likesData.map(like => like.product_id));
+      }
+
+      setLoadingMore(prev => {
+        console.log(`LoadingMore set to: ${!prev}`);
+        return true;
+      });
+
+      console.log('Fetched data:', data, 'Total count:', count);
+
+      // 가져온 product data를 형식화합니다.
+      if (data && data.length > 0) {
+        const formattedProducts = data.map(product => {
+          console.log('Processing product:', JSON.stringify(product, null, 2));
+
+          return {
+            id: product.id,
+            product_id: product.product_id,
+            image: product.image_url,
+            title: product.title,
+            percentage: product.current_amount && product.goal_amount
+              ? `${Math.floor((product.current_amount / product.goal_amount) * 100)}%`
+              : 'N/A',
+            remaining: product.end_date
+              ? `${Math.max(0, Math.floor((new Date(product.end_date) - new Date()) / (1000 * 60 * 60 * 24)))}일 남음`
+              : 'N/A',
+            backers: product.backers_count ? `${product.backers_count}명` : 'N/A',
+            created_at: product.created_at,
+            isLiked: user ? userLikes.has(product.product_id) : false
+          };
+        });
+
+        console.log('Formatted products:', formattedProducts);
+        console.log('Raw fetched data:', JSON.stringify(data, null, 2));
+
+        // product 목록을 update합니다.
+        setProducts(prevProducts => {
+          const newProducts = [...prevProducts, ...formattedProducts];
+          return Array.from(new Set(newProducts.map(p => p.id)))
+            .map(id => newProducts.find(p => p.id === id));
+        });
+
+        setPage(prevPage => {
+          console.log('Updated page:', prevPage + 1);
+          return prevPage + 1;
+        });
+
+        const hasMoreProducts = (currentPage + 1) * PRODUCTS_PER_PAGE < count;
+        setHasMore(hasMoreProducts);
+        console.log('hasMore updated:', { fetchedCount: data.length, totalCount: count });
+
+        setIsLoading(false);
+      } else {
+        console.log('No more products to fetch');
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setError('제품을 불러오는 데 실패했습니다. 나중에 다시 시도해주세요.');
+      setHasMore(false);
+      setIsLoading(false);
+    } finally {
+      console.log('Fetch completed');
+      setLoadingMore(false);
     }
-  }, [currentSlide]);
+  }, []);
 
+  // like toggle function입니다.
+  const toggleLike = async (productId) => {
+    if (!user) {
+      alert('좋아요 기능을 사용하려면 로그인이 필요합니다.');
+      return;
+    }
+    if (!productId) {
+      console.error('Invalid productId:', productId);
+      return;
+    }
+
+    const isLiked = likedProducts.has(productId);
+
+    try {
+      if (isLiked) {
+        // like delete
+        const { error } = await supabase
+          .from('likes')
+          .delete()
+          .eq('user_id', user.user_id)
+          .eq('product_id', productId);
+
+        console.log(`user_id of toggleLike :`, user.user_id);
+
+        if (error) throw error;
+
+        setLikedProducts(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(productId);
+          return newSet;
+        });
+      } else {
+        // like add
+        const { error } = await supabase
+          .from('likes')
+          .insert({ user_id: user.user_id, product_id: productId });
+
+        if (error) throw error;
+
+        setLikedProducts(prev => new Set(prev).add(productId));
+      }
+
+      // product 목록에서 해당 product의 좋아요 상태 update
+      setProducts(prevProducts =>
+        prevProducts.map(product =>
+          product.product_id === productId
+            ? { ...product, isLiked: !isLiked }
+            : product
+        )
+      );
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      console.log('User ID:', user.user_id);
+      console.log('Product ID:', productId);
+      alert('좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+  };
+
+  // 제품 클릭 핸들러입니다.
+  const handleProductClick = (productId) => {
+    navigate(`/productPage/${productId}`);
+  };
+
+  // 제품 목록을 메모이제이션합니다.
+  const memoizedProducts = useMemo(() => products, [products]);
+
+  // 컴포넌트를 렌더링합니다.
   return (
-    <div className="duckfunding-home">
-     
-
+    <div className={styles.duckfundingHome}>
       <main>
-        <div className="banner-slider">
-          <button className="slider-button prev" onClick={prevSlide}><ChevronLeft size={24} /></button>
-          <div className="slide" style={{backgroundImage: `url(${slides[currentSlide].image})`}}>
-            <div className="slide-content">
-              <h2>{slides[currentSlide].title}</h2>
-              <p>{slides[currentSlide].subtitle}</p>
-            </div>
+        <SlideComponent/>
+
+        {error ? (
+          // 에러 메시지를 표시합니다.
+          <div className={styles.errorMessage}>
+            <p>{error}</p>
+            <button onClick={() => fetchProducts(0)}>다시 시도</button>
           </div>
-          <button className="slider-button next" onClick={nextSlide}><ChevronRight size={24} /></button>
-        </div>
-
-        <div className="categories">
-          {categories.map((category, index) => (
-            <div key={index} className="category-item">
-              <div className="category-icon"></div>
-              <span>{category}</span>
-            </div>
-          ))}
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        <div className="product-grid">
-          {products.map((product, index) => (
-            <div key={index} className="product-item">
-              <div className="product-image" style={{backgroundImage: `url(${product.image})`}}>
-                <button className="like-button"><Heart size={20} /></button>
-              </div>
-              <div className="product-info">
-                <h3>{product.title}</h3>
-                <div className="product-stats">
-                  <span className="percentage">{product.percentage} 달성</span>
-                  <span className="remaining">{product.remaining}</span>
+        ) : isLoading ? (
+          // 로딩 중일 때 스켈레톤 UI를 표시합니다.
+          <div className={styles.productGrid}>
+            {[...Array(8)].map((_, index) => (
+              <SkeletonProduct key={index} />
+            ))}
+          </div>
+        ) : totalProducts === 0 ? (
+          // 제품이 없을 때 메시지를 표시합니다.
+          <p className={styles.noProductsMessage}>표시할 제품이 없습니다.</p>
+        ) : (
+          // 제품 목록을 무한 스크롤로 표시합니다.
+          <InfiniteScroll
+            pageStart={0}
+            loadMore={loadMoreProducts}
+            hasMore={hasMore}
+            loader={<div className={styles.loader} key={0}>추가 제품을 불러오는 중...</div>}
+            threshold={250}
+            useWindow={true}
+          >
+            <div className={styles.productGrid}>
+              {products.map((product, index) => (
+                <div
+                  key={`${product.id}-${index}`}
+                  className={styles.productItem}
+                  onClick={() => handleProductClick(product.id)}
+                >
+                  <div className={styles.productImage} style={{ backgroundImage: `url(${product.image})` }}>
+                    <button
+                      className={`${styles.likeButton} ${product.isLiked ? 'liked' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (product.product_id) {
+                          toggleLike(product.product_id);
+                        } else {
+                          console.error('Product ID is undefined:', product);
+                        }
+                      }}
+                    >
+                      <Heart size={20} fill={product.isLiked ? "#ff4081" : "none"} />
+                    </button>
+                  </div>
+                  <div className={styles.productInfo}>
+                    <h3>{product.title}</h3>
+                    <div className={styles.productStats}>
+                      <span className={styles.percentage}>{product.percentage} 달성</span>
+                      <span className={styles.remaining}>{product.remaining}</span>
+                    </div>
+                    <div className={styles.backers}>{product.backers}</div>
+                  </div>
                 </div>
-                <div className="backers">{product.backers}</div>
-              </div>
+              ))}
+
+              {!hasMore && <p className={styles.allIoadedMessage}>모든 제품을 불러왔습니다.</p>}
             </div>
-          ))}
-        </div>
+          </InfiniteScroll>
+        )}
+        {showScrollTop && (
+          <button className={styles.scrollToTop} onClick={scrollToTop}>
+            <ArrowUp size={24} />
+          </button>
+        )}
       </main>
-
-      <style>{`
-        .duckfunding-home {
-          font-family: 'Noto Sans KR', sans-serif;
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-
-
-        .banner-slider {
-          position: relative;
-          height: 400px;
-          overflow: hidden;
-        }
-
-        .slide {
-          width: 100%;
-          height: 100%;
-          background-size: cover;
-          background-position: center;
-          display: flex;
-          align-items: center;
-          padding: 0 50px;
-        }
-
-        .slide-content {
-          color: white;
-          text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-        }
-
-        .slider-button {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          background: rgba(255,255,255,0.5);
-          border: none;
-          border-radius: 50%;
-          width: 40px;
-          height: 40px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          cursor: pointer;
-        }
-
-        .prev { left: 10px; }
-        .next { right: 10px; }
-
-        .categories {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 20px;
-          overflow-x: auto;
-        }
-
-        .category-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          margin: 0 10px;
-        }
-
-        .category-icon {
-          width: 40px;
-          height: 40px;
-          background-color: #f0f0f0;
-          border-radius: 50%;
-          margin-bottom: 5px;
-        }
-
-
-        .product-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-          gap: 20px;
-          margin-top: 40px;
-        }
-
-        .product-item {
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          overflow: hidden;
-        }
-
-        .product-image {
-          height: 200px;
-          background-size: cover;
-          background-position: center;
-          position: relative;
-        }
-
-        .like-button {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          background: white;
-          border: none;
-          border-radius: 50%;
-          padding: 5px;
-          cursor: pointer;
-        }
-
-        .product-info {
-          padding: 15px;
-        }
-
-        .product-info h3 {
-          margin: 0 0 10px;
-          font-size: 16px;
-          line-height: 1.4;
-        }
-
-        .product-stats {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 5px;
-        }
-
-        .percentage {
-          color: #00c4c4;
-          font-weight: bold;
-        }
-
-        .remaining {
-          color: #666;
-        }
-
-        .backers {
-          color: #666;
-          font-size: 14px;
-        }
-
-      `}</style>
     </div>
   );
 };
+
+// 메모이제이션된 ProductItem 컴포넌트입니다.
+const ProductItem = React.memo(({ product, onLike }) => {
+  const navigate = useNavigate();
+
+  const handleProductClick = () => {
+    navigate(`/productPage/${product.id}`);
+  };
+
+  return (
+    <div className={styles.productItem} onClick={handleProductClick}>
+      <div className={styles.productImage} style={{ backgroundImage: `url(${product.image})` }}>
+        <button
+          className={`${styles.likeButton} ${product.isLiked ? 'liked' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onLike(product.product_id);
+          }}
+        >
+          <Heart size={20} fill={product.isLiked ? "#ff4081" : "none"} />
+        </button>
+      </div>
+      <div className={styles.productInfo}>
+        <h3>{product.title}</h3>
+        <div className={styles.productStats}>
+          <span className={styles.percentage}>{product.percentage} 달성</span>
+          <span className={styles.remaining}>{product.remaining}</span>
+        </div>
+        <div className={styles.backers}>{product.backers}</div>
+      </div>
+    </div>
+  );
+});
 
 export default DuckFundingHome;

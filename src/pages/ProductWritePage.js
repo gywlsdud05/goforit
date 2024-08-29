@@ -6,16 +6,18 @@ import { Alert, AlertDescription, AlertTitle, AlertDialog, AlertDialogAction } f
 
 const ProductWritePage = () => {
 
-
     //const editorRef = useRef(null);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
 
-    const { control, register, handleSubmit, formState: { errors } } = useForm();
+    const { control, register, handleSubmit, watch, formState: { errors } } = useForm();
 
     //   const handleEditorInit = (evt, editor) => {
     //     editorRef.current = editor;
     //   };
+
+    const maxLength = 40;
+    const titleValue = watch('title') || '';
 
     const onSubmit = async (data) => {
         // if (editorRef.current) {
@@ -26,7 +28,7 @@ const ProductWritePage = () => {
             .insert([
                 {
                     title: data.title,
-                    subtitle: data.subtitle,
+                    summary: data.summary,
                     // body: editorContent 
                     body: data.body,
                     price: data.price
@@ -53,18 +55,27 @@ const ProductWritePage = () => {
                         id="title"
                         className="w-full border border-gray-300 rounded-md p-2"
                         placeholder="상품 제목을 입력하세요"
-                        {...register('title', { required: 'Title is required' })}
+                        {...register('title', {
+                            required: 'Title is required',
+                            maxLength: {
+                                value: maxLength,
+                                message: `Title should be at most ${maxLength} characters`
+                            }
+                        })}
                     />
+                    <span className="text-sm text-gray-500">
+                        {maxLength - titleValue.length}자 남음
+                    </span>
                     {/* {errors.title && <div style={{ color: 'red' }}>{errors.title.message}</div>} */}
                     {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
                 </div>
 
                 <div>
-                    <label htmlFor="subtitle" className="block mb-1">Subtitle</label>
+                    <label htmlFor="summary" className="block mb-1">Summary</label>
                     <input
                         type="text"
-                        id="subtitle"
-                        {...register('subtitle')}
+                        id="summary"
+                        {...register('summary')}
                         className="w-full p-2 border rounded"
                     />
                 </div>
