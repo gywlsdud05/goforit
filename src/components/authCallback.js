@@ -4,7 +4,7 @@ import { supabase } from '../supabase.client';
 import useAuthStore from '../store/useAuthStore';
 
 const AuthCallback = () => {
-  const { setUser, setError } = useAuthStore();
+  const { handleUserAuthentication, setError } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,7 +13,7 @@ const AuthCallback = () => {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
         if (data.session) {
-          setUser(data.session.user);
+          await handleUserAuthentication(data.session.user);
           navigate('/DuckFundingHome');
         } else {
           throw new Error('No session found');
@@ -26,7 +26,7 @@ const AuthCallback = () => {
     };
 
     handleAuthCallback();
-  }, [setUser, setError, navigate]);
+  }, [handleUserAuthentication, setError, navigate]);
 
   return <div>Processing login...</div>;
 };

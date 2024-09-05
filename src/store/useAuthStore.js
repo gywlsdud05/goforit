@@ -1,9 +1,5 @@
 import { create } from 'zustand';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = 'https://vrjeaqcpjjqotxntpatt.supabase.co'
-const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY
-export const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '../supabase.client';
 
 const useAuthStore = create((set, get) => ({
   session: null,
@@ -19,12 +15,20 @@ const useAuthStore = create((set, get) => ({
       const { data: userData, error } = await supabase
         .from('users')
         .select('*')
-        .eq('user_id', userId)
-        .single();
-  
+        .eq('user_id', userId);
+
       if (error) throw error;
-  
-      return userData;
+
+      if (!userData || userData.length === 0) {
+        console.warn(`No user data found for user_id: ${userId}`);
+        return null;
+      }
+
+      if (userData.length > 1) {
+        console.warn(`Multiple entries found for user_id: ${userId}. Using the first entry.`);
+      }
+
+      return userData[0]; // Return the first (or only) user data object
     } catch (error) {
       console.error('Error fetching user data:', error.message);
       throw error;
@@ -38,7 +42,11 @@ const useAuthStore = create((set, get) => ({
 
       if (session) {
         const userData = await get().fetchUserData(session.user.id);
-        set({ session, user: { ...session.user, ...userData }, error: null });
+        set({ 
+          session, 
+          user: userData ? { ...session.user, ...userData } : session.user, 
+          error: null 
+        });
       } else {
         set({ session: null, user: null, error: null });
       }
@@ -80,11 +88,18 @@ const useAuthStore = create((set, get) => ({
         provider,
         options: {
           redirectTo: `${window.location.origin}/AuthCallback`,
+          queryParans: {
+            acces_type: 'offline',
+            prompt: 'consent',
+            },
         },
       });
 
       if (error) throw error;
 
+      
+
+      // The actual authentication will be handled in handleAuthCallback
       return data;
     } catch (error) {
       console.error(`${provider} login error:`, error);
@@ -93,22 +108,72 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-  handleAuthCallback: async () => {
+
+  handleUserAuthentication: async (authUser) => {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error) throw error;
-
-      if (session) {
-        const userData = await get().fetchUserData(session.user.id);
-        set({ session, user: { ...session.user, ...userData }, error: null });
-        return session.user;
-      } else {
-        throw new Error('No session found');
+      console.log('authuser:',authUser);
+      // Check if user exists in our database
+      const { data: existingUser, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .single();
+  
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        // PGRST116 is the error code for no rows returned
+        throw fetchError;
       }
+  
+      let userData;
+      console.log('New user registered:', userData);
+      if (!existingUser) {
+        // User doesn't exist, create a new user
+        const { data: newUser, error: insertError } = await supabase
+          .from('users')
+          .insert([
+            {
+              user_id: authUser.id,
+              email: authUser.email,
+              nickname: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.raw_user_meta_data?.name || '',
+              avatarUrl: authUser.user_metadata?.avatar_url || authUser.raw_user_meta_data?.avatar_url || '',
+              // Add any other fields you want to store
+            }
+          ])
+          .single();
+  
+        if (insertError) throw insertError;
+  
+        userData = newUser;
+        console.log('New user registered:', userData);
+      } else {
+        // User exists, update the existing data
+        const { data: updatedUser, error: updateError } = await supabase
+          .from('users')
+          .update({
+            email: authUser.email,
+            nickname: authUser.user_metadata?.full_name || authUser.user_metadata?.name || existingUser.nickname,
+            avatar_url: authUser.user_metadata?.avatar_url || existingUser.avatar_url,
+            // Update any other fields as needed
+          })
+          .eq('user_id', authUser.id)
+          .single();
+  
+        if (updateError) throw updateError;
+  
+        userData = updatedUser;
+        console.log('Existing user updated:', userData);
+      }
+  
+      // Set the session and user data
+      set({ 
+        session: { user: authUser },
+        user: { ...authUser, ...userData },
+        error: null 
+      });
+  
     } catch (error) {
-      console.error('Auth callback error:', error.message);
-      set({ session: null, user: null, error: error.message });
+      console.error('Error in handleUserAuthentication:', error.message);
+      set({ error: 'Failed to process authentication. Please try again.' });
       throw error;
     }
   },

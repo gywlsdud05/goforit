@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './SkeletonProduct.css';
+import styles from './SkeletonProduct.module.css';
 
 const SkeletonProduct = () => {
   return (

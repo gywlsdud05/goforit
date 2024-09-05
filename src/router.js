@@ -1,16 +1,20 @@
 // src/router.js
-import { createBrowserRouter } from "react-router-dom";
+
 import App from "./App";
-import WolrdPage from "./pages/DuckWolrdPage";
+import AuthCallback from "./components/AuthCallback";
+import BellPage from "./pages/BellPage";
 import DuckFundingHome from "./pages/DuckFundingHome";
+import WolrdPage from "./pages/DuckWolrdPage";
 import Carousel from "./pages/Example";
+import Example from "./pages/Example";
+import Favorites from "./pages/Favorites";
 import LoginPage from "./pages/LoginPage";
-import SignupForm from "./pages/SignUpPage";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import ProductPage from "./pages/ProductPage";
 import ProductWritePage from "./pages/ProductWritePage";
-import PaymentSuccessPage from "./pages/PaymentSuccessPage";
-import AuthCallback from "./components/AuthCallback";
+import SignupForm from "./pages/SignUpPage";
 import UserProfile from "./pages/UserProfile";
+import { createBrowserRouter } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +31,9 @@ const router = createBrowserRouter([
       { path: "payment-success", element: <PaymentSuccessPage /> },
       { path: "AuthCallback", element: <AuthCallback /> },
       { path: "UserProfile", element: <UserProfile /> },
+      { path: "Favorites", element: <Favorites /> },
+      { path: "BellPage", element: <BellPage /> },
+      { path: "Example", element: <Example /> },
     ],
   },
 ]);

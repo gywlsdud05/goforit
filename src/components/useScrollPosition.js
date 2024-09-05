@@ -1,12 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { debounce } from 'lodash';
 
 const useScrollPosition = (key, delay = 100) => {
-  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const handleScroll = useCallback(() => {
     const currentPosition = window.scrollY;
-    setShowScrollTop(currentPosition > 300);
     localStorage.setItem('duckFundingScrollPosition', currentPosition.toString());
   }, []);
 
@@ -49,24 +47,6 @@ const useScrollPosition = (key, delay = 100) => {
   //   console.log(`Current scroll position: ${window.scrollY}`);
   // }, [location])
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
-
-
-useEffect(() => {
-  const handleScroll = () => {
-    setShowScrollTop(window.pageYOffset > 300);
-  };
-
-  window.addEventListener('scroll', handleScroll);
-  return () => window.removeEventListener('scroll', handleScroll);
-}, []);
-
-  return { showScrollTop, scrollToTop };
 };
 
 export default useScrollPosition;

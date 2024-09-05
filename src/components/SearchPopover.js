@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Search, Trophy, FileText, Zap, Clock, Shirt, Wine, Tent, Footprints, X } from 'lucide-react';
 import { supabase } from '../supabase.client';
 import { debounce } from 'lodash';
+import styles from './SearchPopover.module.css';
 
 const SearchPopover = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,19 +11,19 @@ const SearchPopover = () => {
   const inputRef = useRef(null);
 
   const categories = [
-    { icon: <Clock className="w-4 h-4" />, name: "마감임박" },
-    { icon: <Trophy className="w-4 h-4" />, name: "스토어BEST" },
-    { icon: <FileText className="w-4 h-4" />, name: "매너후기" },
-    { icon: <Zap className="w-4 h-4" />, name: "중고가전" },
+    { icon: <Clock className={styles.categoryIcon} />, name: "마감임박" },
+    { icon: <Trophy className={styles.categoryIcon} />, name: "스토어BEST" },
+    { icon: <FileText className={styles.categoryIcon} />, name: "매너후기" },
+    { icon: <Zap className={styles.categoryIcon} />, name: "중고가전" },
   ];
 
   const recentSearches = ["신발", "화장품", "젤스"];
 
   const popularCategories = [
-    { icon: <Shirt className="w-4 h-4" />, name: "패션" },
-    { icon: <Wine className="w-4 h-4" />, name: "뷰티" },
-    { icon: <Tent className="w-4 h-4" />, name: "캠핑" },
-    { icon: <Footprints className="w-4 h-4" />, name: "스포츠" },
+    { icon: <Shirt className={styles.categoryIcon} />, name: "패션" },
+    { icon: <Wine className={styles.categoryIcon} />, name: "뷰티" },
+    { icon: <Tent className={styles.categoryIcon} />, name: "캠핑" },
+    { icon: <Footprints className={styles.categoryIcon} />, name: "스포츠" },
   ];
 
   const handleInputFocus = () => {
@@ -70,65 +71,65 @@ const SearchPopover = () => {
   }, [debouncedSearch]);
 
   return (
-    <div className="relative w-full max-w-md">
-      <div className="flex items-center border border-gray-300 rounded-full px-4 py-2 bg-gray-100">
-        <Search className="w-5 h-5 text-gray-400 mr-2" />
+    <div className={styles.container}>
+      <div className={styles.searchBox}>
+        <Search className={styles.searchIcon} />
         <input
           ref={inputRef}
           type="text"
           value={searchTerm}
           placeholder="새로운 일상이 필요하신가요?"
-          className="bg-transparent outline-none flex-grow"
+          className={styles.input}
           onFocus={handleInputFocus}
           onChange={handleInputChange}
         />
       </div>
       
       {isOpen && (
-        <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-lg shadow-lg p-4">
+        <div className={styles.popover}>
           <button 
-            className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100"
+            className={styles.closeButton}
             onClick={() => setIsOpen(false)}
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className={styles.closeIcon} />
           </button>
 
           {searchResults.length > 0 ? (
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold mb-2">검색 결과</h3>
+            <div className={styles.searchResults}>
+              <h3 className={styles.sectionTitle}>검색 결과</h3>
               {searchResults.map((result) => (
-                <div key={result.id} className="py-1">
+                <div key={result.id} className={styles.searchResultItem}>
                   {result.name}
                 </div>
               ))}
             </div>
           ) : (
             <>
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className={styles.categoriesList}>
                 {categories.map((category, index) => (
-                  <div key={index} className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
+                  <div key={index} className={styles.categoryItem}>
                     {category.icon}
-                    <span className="ml-1">{category.name}</span>
+                    <span>{category.name}</span>
                   </div>
                 ))}
               </div>
               
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold mb-2">최근 검색어</h3>
-                <div className="flex flex-wrap gap-2">
+              <div className={styles.recentSearches}>
+                <h3 className={styles.sectionTitle}>최근 검색어</h3>
+                <div className={styles.recentSearches}>
                   {recentSearches.map((search, index) => (
-                    <span key={index} className="bg-gray-100 rounded-full px-3 py-1 text-sm">#{search}</span>
+                    <span key={index} className={styles.recentSearchItem}>#{search}</span>
                   ))}
                 </div>
               </div>
               
               <div>
-                <h3 className="text-sm font-semibold mb-2">카테고리</h3>
-                <div className="grid grid-cols-2 gap-2">
+                <h3 className={styles.sectionTitle}>카테고리</h3>
+                <div className={styles.popularCategories}>
                   {popularCategories.map((category, index) => (
-                    <div key={index} className="flex items-center">
+                    <div key={index} className={styles.popularCategoryItem}>
                       {category.icon}
-                      <span className="ml-2">{category.name}</span>
+                      <span>{category.name}</span>
                     </div>
                   ))}
                 </div>

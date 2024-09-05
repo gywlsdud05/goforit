@@ -1,0 +1,129 @@
+.container {
+    max-width: 28rem;
+    margin: 2.5rem auto 0;
+    padding: 1.5rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+  }
+  
+  .forgotPassword {
+    text-align: right;
+    margin-bottom: 1rem;
+  }
+  
+  .forgotPasswordLink {
+    font-size: 0.875rem;
+    color: #4b5563;
+  }
+  
+  .forgotPasswordLink:hover {
+    text-decoration: underline;
+  }
+  
+  .button {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  
+  .emailLoginButton {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  
+  .emailLoginButton:hover {
+    background-color: #bfdbfe;
+  }
+  
+  .kakaoButton {
+    background-color: #fbbf24;
+    color: #000000;
+  }
+  
+  .kakaoButton:hover {
+    background-color: #f59e0b;
+  }
+  
+  .naverButton {
+    background-color: #10b981;
+    color: #ffffff;
+  }
+  
+  .naverButton:hover {
+    background-color: #059669;
+  }
+  
+  .socialButtonsContainer {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .socialButton {
+    padding: 0.5rem;
+    border-radius: 9999px;
+  }
+  
+  .googleButton {
+    background-color: #f3f4f6;
+  }
+  
+  .googleButton:hover {
+    background-color: #e5e7eb;
+  }
+  
+  .facebookButton {
+    background-color: #2563eb;
+  }
+  
+  .facebookButton:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .appleButton {
+    background-color: #1f2937;
+  }
+  
+  .appleButton:hover {
+    background-color: #111827;
+  }
+  
+  .signupContainer {
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+  
+  .signupText {
+    font-size: 0.875rem;
+    color: #4b5563;
+  }
+  
+  .signupLink {
+    font-size: 0.875rem;
+    color: #2563eb;
+  }
+  
+  .signupLink:hover {
+    text-decoration: underline;
+  }

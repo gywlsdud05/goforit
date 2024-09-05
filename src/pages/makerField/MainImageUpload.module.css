@@ -1,0 +1,57 @@
+.mainImageUpload {
+  margin-bottom: 1rem;
+}
+
+.imageUploadGuide {
+  background-color: #ebf8ff;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.guideTitle {
+  font-weight: 600;
+  color: #2b6cb0;
+  margin-bottom: 0.5rem;
+}
+
+.guideList {
+  list-style-type: disc;
+  list-style-position: inside;
+  font-size: 0.875rem;
+  color: #4299e1;
+}
+
+.fileInput {
+  display: none;
+}
+
+.imageUploadContainer {
+  width: 100%;
+  max-width: 600px;
+  height: 339px; /* Maintains the 1200:678 aspect ratio */
+  border: 2px dashed #cbd5e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.uploadPlaceholder {
+  color: #718096;
+  font-size: 0.875rem;
+}
+
+.imagePreviewContainer {
+  margin-top: 1rem;
+}
+
+.imagePreview {
+  max-width: 100%;
+  max-height: 339px;
+  object-fit: contain;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+}

@@ -1,0 +1,129 @@
+.container {
+  max-width: 1200px;
+  padding: 0 1rem;
+  margin: 0 auto;
+}
+
+#tranding {
+  padding: 4rem 0;
+}
+
+.trandingSlider {
+  height: 360px;
+  padding: 2rem 0;
+  position: relative;
+}
+
+.trandingSlide {
+  width: 640px;
+  height: 360px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.trandingSlideImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.trandingSlideImg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trandingSlideContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  color: white;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.slideTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.slideSubtitle {
+  font-size: 0.9rem;
+}
+
+.trandingSliderControl {
+  position: relative;
+  bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sliderArrow {
+  background: rgba(255, 255, 255, 0.5);
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  filter: drop-shadow(0px 8px 24px rgba(18, 28, 53, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:global(.swiper-pagination) {
+  position: relative;
+  width: 100%;
+  bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+:global(.swiper-pagination-bullet) {
+  width: 40px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  opacity: 1;
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+:global(.swiper-pagination-bullet .bullet-inner) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: white;
+  transition: width 0.3s linear;
+}
+
+:global(.swiper-pagination-bullet-active .bullet-inner) {
+  animation: fillBullet 5s linear forwards;
+}
+
+@keyframes fillBullet {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+:global(.swiper-slide-active) {
+  transform: scale(1.05);
+  z-index: 2;
+}
+
+:global(.swiper-slide-prev),
+:global(.swiper-slide-next) {
+  opacity: 0.7;
+}

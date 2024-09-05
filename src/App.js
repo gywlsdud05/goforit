@@ -1,7 +1,6 @@
-import React, { useEffect , useCallback } from "react";
-import { Outlet, useLocation, ScrollRestoration } from "react-router-dom";
+import React, { useEffect, useCallback } from "react";
+import { Outlet, useLocation, ScrollRestoration, useNavigate } from "react-router-dom";
 import { SessionContextProvider } from '@supabase/auth-helpers-react'
-import { createClient } from '@supabase/supabase-js'
 import { supabase } from './supabase.client';
 import Header from "./pages/Header";
 import useAuthStore from './store/useAuthStore';
@@ -9,12 +8,13 @@ import CompanyFooter from './pages/CompanyFooter';
 import { debounce } from 'lodash';
 
 const App = () => {
-  const { initializeAuth } = useAuthStore();
+  const { initializeAuth, handleAuthCallback } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     initializeAuth();
-  }, []);
+  }, [initializeAuth]);
 
   const saveScrollPosition = useCallback(debounce(() => {
     const currentPosition = window.scrollY;
@@ -25,22 +25,39 @@ const App = () => {
   useEffect(() => {
     console.log("Location changed:", location.pathname);
 
-    if (location.hash) {
-      console.log("Scrolling to hash:", location.hash);
-      const element = document.querySelector(location.hash);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+    const handleHash = async () => {
+      if (location.hash.includes('access_token')) {
+        try {
+          const hashParams = new URLSearchParams(location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          
+          if (accessToken) {
+            await handleAuthCallback({ access_token: accessToken });
+            // Clear the hash from the URL
+            navigate(location.pathname, { replace: true });
+          }
+        } catch (error) {
+          console.error('Error handling auth callback:', error);
+        }
+      } else if (location.hash) {
+        console.log("Scrolling to hash:", location.hash);
+        const element = document.querySelector(location.hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo(0, 0);
       }
-    } else {
-      window.scrollTo(0, 0);
-    }
+    };
+
+    handleHash();
 
     window.addEventListener('scroll', saveScrollPosition);
     return () => {
       window.removeEventListener('scroll', saveScrollPosition);
       saveScrollPosition.cancel();
     };
-  }, [location, saveScrollPosition]);
+  }, [location, saveScrollPosition, handleAuthCallback, navigate]);
 
   useEffect(() => {
     const savedPosition = localStorage.getItem('scrollPosition');
