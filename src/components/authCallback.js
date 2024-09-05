@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase.client';
-import useAuthStore from '../store/useAuthStore';
+import useAuthStore from "../store/useAuthStore";
+import { supabase } from "../supabase.client";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AuthCallback = () => {
   const { handleUserAuthentication, setError } = useAuthStore();
@@ -14,14 +14,14 @@ const AuthCallback = () => {
         if (error) throw error;
         if (data.session) {
           await handleUserAuthentication(data.session.user);
-          navigate('/DuckFundingHome');
+          navigate("/DuckFundingHome");
         } else {
-          throw new Error('No session found');
+          throw new Error("No session found");
         }
       } catch (error) {
-        console.error('Auth callback error:', error.message);
+        console.error("Auth callback error:", error.message);
         setError(error.message);
-        navigate('/LoginPage');
+        navigate("/LoginPage");
       }
     };
 
