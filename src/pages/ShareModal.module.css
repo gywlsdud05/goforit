@@ -1,0 +1,62 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modalContainer {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 20rem;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.closeButton {
+  color: #6b7280;
+}
+
+.closeButton:hover {
+  color: #374151;
+}
+
+.shareOptionsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.shareOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.shareIconContainer {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.shareOptionName {
+  font-size: 0.75rem;
+}

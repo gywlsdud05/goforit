@@ -1,122 +1,110 @@
 import useProductWriteStore from "../../store/useProductWriteStore";
-import styles from "./IntroMediaUpload.module.css";
-import React, { useRef } from "react";
+import React from "react";
+import "react-image-crop/dist/ReactCrop.css";
+import IntroMediaUpload from "./IntroMediaUpload";
+import MainImageUpload from "./MainImageUpload";
+import ProductStory from "./ProductStory";
+import styles from "./StoryWriting.module.css";
 
-const IntroMediaUpload = () => {
-  const { formData, updateStoryWriting, setFormData } = useProductWriteStore();
-  const pictureInputRef = useRef(null);
+const StoryWriting = ({ control, register, errors, watch }) => {
+  const { formData, addTag, removeTag, setFormData } = useProductWriteStore();
 
-  const handleVideoUrlChange = (e) => {
-    updateStoryWriting("videoUrl", e.target.value);
+  const maxLength = 40;
+  const titleValue = watch("title") || "";
+
+  const handleMainImageUpload = (croppedImageUrl) => {
+    setFormData({ mainImage: croppedImageUrl });
   };
 
-  const handlePictureUpload = (event) => {
-    const files = Array.from(event.target.files);
-    const validFiles = files.filter((file) => {
-      if (file.size > 10 * 1024 * 1024) {
-        alert(`${file.name}의 크기가 10MB를 초과합니다.`);
-        return false;
-      }
-      if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
-        alert(`${file.name}은 JPG, JPEG, PNG 파일만 업로드 가능합니다.`);
-        return false;
-      }
-      return true;
-    });
-
-    setFormData({
-      introPictures: [...formData.introPictures, ...validFiles].slice(0, 10),
-    });
-  };
-
-  const removePicture = (index) => {
-    setFormData({
-      introPictures: formData.introPictures.filter((_, i) => i !== index),
-    });
+  const handleTagInput = (e) => {
+    if (e.key === "Enter" && e.target.value.trim() !== "") {
+      addTag(e.target.value.trim());
+      e.target.value = "";
+    }
   };
 
   return (
-    <div className={styles.introMediaUpload}>
-      <label className={styles.label}>
-        소개 영상/사진 등록 <span className={styles.required}>*</span>
-      </label>
-      <div className={styles.buttonGroup}>
-        <button
-          type="button"
-          className={`${styles.button} ${
-            formData.introType === "video" ? styles.active : ""
-          }`}
-          onClick={() => updateStoryWriting("introType", "video")}
-        >
-          소개 영상
-        </button>
-        <button
-          type="button"
-          className={`${styles.button} ${
-            formData.introType === "pictures" ? styles.active : ""
-          }`}
-          onClick={() => updateStoryWriting("introType", "pictures")}
-        >
-          소개 사진
-        </button>
+    <div className={styles.container}>
+      <div className={styles.inputGroup}>
+        <label htmlFor="title" className={styles.label}>
+          제목
+        </label>
+        <input
+          type="text"
+          id="title"
+          className={styles.input}
+          placeholder="상품 제목을 입력하세요"
+          {...register("title", {
+            required: "Title is required",
+            maxLength: {
+              value: maxLength,
+              message: `Title should be at most ${maxLength} characters`,
+            },
+          })}
+        />
+        <span className={styles.characterCount}>
+          {maxLength - titleValue.length}자 남음
+        </span>
+        {errors.title && (
+          <p className={styles.errorText}>{errors.title.message}</p>
+        )}
       </div>
 
-      {formData.introType === "video" ? (
-        <div className={styles.videoInput}>
+      <div className={styles.inputGroup}>
+        <label htmlFor="mainImage" className={styles.label}>
+          대표 이미지 <span className={styles.required}>*</span>
+        </label>
+        <MainImageUpload onImageUpload={handleMainImageUpload} />
+      </div>
+
+      <IntroMediaUpload />
+
+      {/* Summary input */}
+      <div className={styles.inputGroup}>
+        <label htmlFor="summary" className={styles.label}>
+          Summary
+        </label>
+        <input
+          type="text"
+          id="summary"
+          {...register("summary")}
+          className={styles.input}
+          placeholder="프로젝트 요약을 입력하세요"
+        />
+      </div>
+
+      {/* Product Story Component */}
+      <ProductStory control={control} errors={errors} />
+
+      {/* Tags input */}
+      <div className={styles.inputGroup}>
+        <label className={styles.label}>
+          검색용 태그(#) <span className={styles.required}>*</span>
+        </label>
+        <div className={styles.tagContainer}>
+          {formData.tags.map((tag, index) => (
+            <span key={index} className={styles.tag}>
+              #{tag}
+              <button
+                onClick={() => removeTag(index)}
+                className={styles.removeTagButton}
+              >
+                &times;
+              </button>
+            </span>
+          ))}
           <input
             type="text"
-            placeholder="영상 URL 입력"
-            value={formData.videoUrl || ""} // 수정된 부분
-            onChange={handleVideoUrlChange}
-            className={styles.input}
+            id="tags"
+            onKeyPress={handleTagInput}
+            className={styles.tagInput}
+            placeholder="엔터를 누르면 최대 10개까지 태그를 입력할 수 있어요"
           />
-          <p className={styles.helpText}>
-            유튜브, 비메오 등 영상 스트리밍 서비스 URL 등록 가능
-          </p>
         </div>
-      ) : (
-        <div className={styles.pictureUpload}>
-          <input
-            type="file"
-            accept="image/jpeg,image/jpg,image/png"
-            multiple
-            ref={pictureInputRef}
-            onChange={handlePictureUpload}
-            className={styles.fileInput}
-          />
-          <button
-            type="button"
-            onClick={() => pictureInputRef.current.click()}
-            className={styles.uploadButton}
-          >
-            사진 선택 ({formData.introPictures.length}/10)
-          </button>
-          <div className={styles.thumbnailContainer}>
-            {formData.introPictures.map((file, index) => (
-              <div key={index} className={styles.thumbnail}>
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt={`Intro ${index + 1}`}
-                  className={styles.thumbnailImage}
-                />
-                <button
-                  type="button"
-                  onClick={() => removePicture(index)}
-                  className={styles.removeButton}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-          <p className={styles.helpText}>
-            JPG, JPEG, PNG 10MB 이하, 해상도 760x480 픽셀 이상 ~ 1440x864 픽셀
-            이하
-          </p>
-        </div>
-      )}
+        <p className={styles.tagCount}>{formData.tags.length}/10개의 태그</p>
+      </div>
     </div>
   );
 };
 
-export default IntroMediaUpload;
+export default StoryWriting;

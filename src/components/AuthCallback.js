@@ -1,10 +1,10 @@
-import useAuthStore from "../store/useAuthStore";
+import useDuckFundingAuthStore from "../store/useDuckFundingAuthStore";
 import { supabase } from "../supabase.client";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const AuthCallback = () => {
-  const { handleUserAuthentication, setError } = useAuthStore();
+  const { handleUserAuthentication, setError } = useDuckFundingAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {

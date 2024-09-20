@@ -15,6 +15,7 @@ const useProductWriteStore = create((set, get) => ({
     summary: "",
     body: "",
     tags: [],
+    price: "",
   },
   isValid: false,
   user: null,
@@ -37,6 +38,160 @@ const useProductWriteStore = create((set, get) => ({
       formData: { ...state.formData, [field]: value },
     })),
 
+  uploadToSupabase: async (file, bucket = "product-image") => {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    let { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, file);
+
+    if (error) {
+      throw error;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(filePath);
+
+    return publicUrlData.publicUrl;
+  },
+
+  uploadIntroPictures: async (files) => {
+    const { formData, setFormData, uploadToSupabase } = get();
+
+    const uploadPromises = files.map(async (file) => {
+      const publicUrl = await uploadToSupabase(file);
+      return {
+        id: Date.now() + Math.random(),
+        url: publicUrl,
+      };
+    });
+
+    const uploadedImages = await Promise.all(uploadPromises);
+
+    const newIntroPictures = [
+      ...(formData.introPictures || []),
+      ...uploadedImages,
+    ].slice(0, 10);
+
+    setFormData({ introPictures: newIntroPictures });
+    await get().updateIntroVisualsInDatabase(newIntroPictures);
+  },
+
+  uploadMainImage: async (file) => {
+    const { setFormData, uploadToSupabase } = get();
+
+    const publicUrl = await uploadToSupabase(file);
+    setFormData({ mainImage: publicUrl });
+    await get().updateMainImageInDatabase(publicUrl);
+  },
+
+  removeIntroPicture: async (id) => {
+    const { formData, setFormData, updateIntroVisualsInDatabase } = get();
+
+    const pictureToRemove = formData.introPictures.find((pic) => pic.id === id);
+    if (pictureToRemove) {
+      await supabase.storage
+        .from("product-image")
+        .remove([pictureToRemove.url.split("/").pop()]);
+    }
+
+    const updatedPictures = formData.introPictures.filter(
+      (pic) => pic.id !== id
+    );
+    setFormData({ introPictures: updatedPictures });
+    await updateIntroVisualsInDatabase(updatedPictures);
+  },
+
+  removeMainImage: async () => {
+    const { formData, setFormData, updateMainImageInDatabase } = get();
+
+    if (formData.mainImage) {
+      const fileName = formData.mainImage.split("/").pop();
+      await supabase.storage.from("product-image").remove([fileName]);
+    }
+
+    setFormData({ mainImage: null });
+    await updateMainImageInDatabase(null);
+  },
+
+  updateIntroVisualsInDatabase: async (introPictures) => {
+    const { formData } = get();
+    const { data, error } = await supabase
+      .from("product")
+      .update({ introVisuals: introPictures.map((pic) => pic.url) })
+      .eq("id", formData.id);
+
+    if (error) {
+      console.error("Error updating introVisuals:", error);
+      throw error;
+    }
+  },
+
+  updateMainImageInDatabase: async (mainImageUrl) => {
+    const { formData } = get();
+    const { data, error } = await supabase
+      .from("product")
+      .update({ mainImage: mainImageUrl })
+      .eq("id", formData.id);
+
+    if (error) {
+      console.error("Error updating mainImage:", error);
+      throw error;
+    }
+  },
+
+  editIntroPicture: async (id, editedImageBlob) => {
+    const {
+      formData,
+      setFormData,
+      uploadToSupabase,
+      updateIntroVisualsInDatabase,
+    } = get();
+
+    const file = new File([editedImageBlob], `edited_image_${id}.jpg`, {
+      type: "image/jpeg",
+    });
+    const publicUrl = await uploadToSupabase(file);
+
+    const updatedPictures = formData.introPictures.map((pic) =>
+      pic.id === id ? { ...pic, url: publicUrl } : pic
+    );
+
+    setFormData({ introPictures: updatedPictures });
+    await updateIntroVisualsInDatabase(updatedPictures);
+  },
+
+  editMainImage: async (editedImageBlob) => {
+    const {
+      formData,
+      setFormData,
+      uploadToSupabase,
+      updateMainImageInDatabase,
+    } = get();
+
+    const file = new File([editedImageBlob], `edited_main_image.jpg`, {
+      type: "image/jpeg",
+    });
+    const publicUrl = await uploadToSupabase(file);
+
+    // 이전 이미지 삭제
+    if (formData.mainImage) {
+      const oldFileName = formData.mainImage.split("/").pop();
+      await supabase.storage.from("product-image").remove([oldFileName]);
+    }
+
+    setFormData({ mainImage: publicUrl });
+    await updateMainImageInDatabase(publicUrl);
+  },
+
+  updateRewardDesign: (field, value) =>
+    set((state) => ({
+      formData: { ...state.formData, [field]: value },
+    })),
+
   addTag: (tag) =>
     set((state) => ({
       formData: {
@@ -52,6 +207,8 @@ const useProductWriteStore = create((set, get) => ({
         tags: state.formData.tags.filter((_, i) => i !== index),
       },
     })),
+
+  setPrice: (price) => set({ price }),
 
   onTemporarySave: async () => {
     const { formData, user } = get();
@@ -152,6 +309,7 @@ const useProductWriteStore = create((set, get) => ({
         summary: "",
         body: "",
         tags: [],
+        price: "",
       },
       isValid: false,
     });

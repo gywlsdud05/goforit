@@ -1,117 +1,122 @@
 .container {
-    position: relative;
-    width: 100%;
-    max-width: 24rem;
-  }
-  
-  .searchBox {
-    display: flex;
-    align-items: center;
-    border: 1px solid #d1d5db;
-    border-radius: 9999px;
-    padding: 0.5rem 1rem;
-    background-color: #f3f4f6;
-  }
-  
-  .searchIcon {
-    width: 1.25rem;
-    height: 1.25rem;
-    color: #9ca3af;
-    margin-right: 0.5rem;
-  }
-  
-  .input {
-    background-color: transparent;
-    outline: none;
-    flex-grow: 1;
-  }
-  
-  .popover {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    margin-top: 0.5rem;
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    padding: 1rem;
-  }
-  
-  .closeButton {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.25rem;
-    border-radius: 9999px;
-  }
-  
-  .closeButton:hover {
-    background-color: #f3f4f6;
-  }
-  
-  .closeIcon {
-    width: 1.25rem;
-    height: 1.25rem;
-    color: #6b7280;
-  }
-  
-  .categoriesList {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  
-  .categoryItem {
-    display: flex;
-    align-items: center;
-    background-color: #f3f4f6;
-    border-radius: 9999px;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-  }
-  
-  .categoryIcon {
-    width: 1rem;
-    height: 1rem;
-  }
-  
-  .sectionTitle {
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-  
-  .recentSearches {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  
-  .recentSearchItem {
-    background-color: #f3f4f6;
-    border-radius: 9999px;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-  }
-  
-  .popularCategories {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-  }
-  
-  .popularCategoryItem {
-    display: flex;
-    align-items: center;
-  }
-  
-  .searchResults {
-    margin-bottom: 1rem;
-  }
-  
-  .searchResultItem {
-    padding: 0.25rem 0;
-  }
+  position: relative;
+  width: 100%;
+  max-width: 24rem;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  background-color: #f3f4f6;
+}
+
+.searchIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #9ca3af;
+  margin-right: 0.5rem;
+}
+
+.input {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  flex-grow: 1;
+  font-size: 0.875rem;
+}
+
+.popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin-top: 0.5rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+}
+
+.closeButton {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background-color: #f3f4f6;
+}
+
+.closeIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+}
+
+.sectionTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #4b5563;
+}
+
+.recentSearches {
+  margin-bottom: 1rem;
+}
+
+.recentSearchItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.recentSearchItem span {
+  cursor: pointer;
+}
+
+.deleteButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 0.25rem;
+  border-radius: 9999px;
+}
+
+.deleteButton:hover {
+  background-color: #f3f4f6;
+}
+
+.clearAllButton {
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #f3f4f6;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.clearAllButton:hover {
+  background-color: #e5e7eb;
+}
+
+.searchResults {
+  margin-bottom: 1rem;
+}
+
+.searchResultItem {
+  padding: 0.25rem 0;
+}

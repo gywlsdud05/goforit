@@ -1,7 +1,8 @@
 import SearchPopover from "../components/SearchPopover";
-import useAuthStore from "../store/useAuthStore";
+import useDuckFundingAuthStore from "../store/useDuckFundingAuthStore";
 import { supabase } from "../supabase.client";
 import styles from "./Header.module.css";
+import ProjectModal from "./ProjectModal";
 import React, { useState, useEffect, useCallback } from "react";
 import { ChevronDown, Search, Menu, X, User, Bell, Heart } from "react-feather";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +16,7 @@ const debounce = (func, wait) => {
 };
 
 const Header = () => {
-  const { user, logout } = useAuthStore((state) => ({
+  const { user, logout } = useDuckFundingAuthStore((state) => ({
     user: state.user,
     logout: state.logout,
   }));
@@ -38,16 +39,16 @@ const Header = () => {
   }, [handleResize]);
 
   useEffect(() => {
-    const fetchAvatarUrl = async (userId) => {
+    const fetchAvatarUrl = async () => {
       console.log("Attempting to fetch avatar URL. User:", user);
-      if (user && userId) {
-        console.log("User ID:", userId);
+      if (user) {
+        console.log("User ID:", user.user_id);
 
         try {
           const { data, error } = await supabase
             .from("users")
             .select("avatarUrl")
-            .eq("user_id", userId)
+            .eq("user_id", user.user_id)
             .single();
 
           if (error) {
@@ -68,6 +69,10 @@ const Header = () => {
       fetchAvatarUrl();
     }
   }, [user]);
+
+  const navigateToFundingHomePage = useCallback(() => {
+    navigate("/DuckFundingHome");
+  }, [navigate]);
 
   const navigateToLoginPage = useCallback(() => {
     navigate("/LoginPage");
@@ -149,12 +154,59 @@ const Header = () => {
     }
   };
 
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [hasExistingProjects, setHasExistingProjects] = useState(false);
+
+  useEffect(() => {
+    const checkExistingProjects = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from("products")
+          .select("id")
+          .eq("maker_id", user.user_id)
+          .eq("status", "pending")
+          .limit(1);
+
+        if (error) {
+          console.error("Error checking existing projects:", error);
+        } else {
+          setHasExistingProjects(data.length > 0);
+        }
+      }
+    };
+
+    checkExistingProjects();
+  }, [user]);
+
+  const handleCreateProject = () => {
+    if (hasExistingProjects) {
+      setShowProjectModal(true);
+    } else {
+      navigate("/ProductWritePage");
+    }
+  };
+
+  const renderCreateProjectButton = () => (
+    <button
+      onClick={handleCreateProject}
+      className={`${styles.button} ${styles.createProjectButton}`}
+    >
+      프로젝트 만들기
+    </button>
+  );
+
   return (
     <header
       className={styles.header}
       style={{ flexWrap: isMobile ? "wrap" : "nowrap" }}
     >
-      <div className={styles.logo}>wadiz</div>
+      <div
+        className={styles.logo}
+        onClick={navigateToFundingHomePage}
+        style={{ cursor: "pointer" }}
+      >
+        DuckFunding
+      </div>
 
       {isMobile ? (
         <button
@@ -190,6 +242,7 @@ const Header = () => {
           </div>
 
           {renderAuthButtons()}
+          {renderCreateProjectButton()}
         </>
       )}
 
@@ -234,8 +287,26 @@ const Header = () => {
           </div>
 
           {renderAuthButtons()}
+
+          <div
+            style={{
+              opacity: isMenuOpen ? 1 : 0,
+              transform: `translateY(${isMenuOpen ? "0" : "-10px"})`,
+            }}
+          >
+            {renderCreateProjectButton()}
+          </div>
         </div>
       )}
+
+      <ProjectModal
+        isOpen={showProjectModal}
+        onClose={() => setShowProjectModal(false)}
+        onConfirm={() => {
+          setShowProjectModal(false);
+          navigate("/ProductWritePage");
+        }}
+      />
     </header>
   );
 };

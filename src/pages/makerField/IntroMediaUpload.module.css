@@ -1,3 +1,4 @@
+/*IntroMediaUpload.module.css*/
 .introMediaUpload {
   margin-bottom: 1.5rem;
 }
@@ -125,4 +126,26 @@
 
 .removeButton:hover {
   background-color: #c53030;
+}
+
+.editButton {
+  position: absolute;
+  bottom: -0.5rem;
+  right: -0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editButton:hover {
+  background-color: #3182ce;
 }

@@ -1,0 +1,153 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.tabContainer {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.tab,
+.tabActive {
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.tabActive {
+  font-weight: bold;
+  border-bottom: 2px solid #00c4c4;
+}
+
+.projectList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.projectCard {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.projectImage {
+  height: 150px;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholderImage {
+  color: #999;
+}
+
+.projectInfo {
+  padding: 15px;
+}
+
+.projectTitle {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.projectStatus {
+  font-size: 14px;
+  color: #00c4c4;
+}
+
+.continueButton {
+  width: 100%;
+  padding: 10px;
+  background-color: #00c4c4;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.continueButton:hover {
+  background-color: #00a0a0;
+}
+
+.optionsButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #fff;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.modalText {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.modalSubText {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.cancelButton,
+.confirmButton {
+  width: 48%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.cancelButton {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.confirmButton {
+  background-color: #00c4c4;
+  color: white;
+}

@@ -1,16 +1,31 @@
 import useProductWriteStore from "../../store/useProductWriteStore";
+import ImageEditor from "./ImageEditor";
 import styles from "./IntroMediaUpload.module.css";
-import React, { useRef } from "react";
+import { Pencil } from "lucide-react";
+import React, { useRef, useEffect, useState } from "react";
 
 const IntroMediaUpload = () => {
-  const { formData, updateStoryWriting, setFormData } = useProductWriteStore();
+  const {
+    formData,
+    updateStoryWriting,
+    uploadIntroPictures,
+    removeIntroPicture,
+    editIntroPicture,
+  } = useProductWriteStore();
   const pictureInputRef = useRef(null);
+  const [editingImageIndex, setEditingImageIndex] = useState(null);
+
+  useEffect(() => {
+    if (!formData.videoUrl) {
+      updateStoryWriting("videoUrl", "");
+    }
+  }, []);
 
   const handleVideoUrlChange = (e) => {
-    updateStoryWriting("videoUrl", e.target.value);
+    updateStoryWriting("videoUrl", e.target.value || "");
   };
 
-  const handlePictureUpload = (event) => {
+  const handlePictureUpload = async (event) => {
     const files = Array.from(event.target.files);
     const validFiles = files.filter((file) => {
       if (file.size > 10 * 1024 * 1024) {
@@ -24,15 +39,17 @@ const IntroMediaUpload = () => {
       return true;
     });
 
-    setFormData({
-      introPictures: [...formData.introPictures, ...validFiles].slice(0, 10),
-    });
+    await uploadIntroPictures(validFiles);
   };
 
-  const removePicture = (index) => {
-    setFormData({
-      introPictures: formData.introPictures.filter((_, i) => i !== index),
-    });
+  const handleEditImage = (index) => {
+    setEditingImageIndex(index);
+  };
+
+  const handleImageEdit = async (editedImageBlob) => {
+    const imageToEdit = formData.introPictures[editingImageIndex];
+    await editIntroPicture(imageToEdit.id, editedImageBlob);
+    setEditingImageIndex(null);
   };
 
   return (
@@ -66,7 +83,7 @@ const IntroMediaUpload = () => {
           <input
             type="text"
             placeholder="영상 URL 입력"
-            value={formData.videoUrl}
+            value={formData.videoUrl || ""}
             onChange={handleVideoUrlChange}
             className={styles.input}
           />
@@ -89,22 +106,29 @@ const IntroMediaUpload = () => {
             onClick={() => pictureInputRef.current.click()}
             className={styles.uploadButton}
           >
-            사진 선택 ({formData.introPictures.length}/10)
+            사진 선택 ({formData.introPictures?.length || 0}/10)
           </button>
           <div className={styles.thumbnailContainer}>
-            {formData.introPictures.map((file, index) => (
-              <div key={index} className={styles.thumbnail}>
+            {formData.introPictures?.map((pic, index) => (
+              <div key={pic.id} className={styles.thumbnail}>
                 <img
-                  src={URL.createObjectURL(file)}
+                  src={pic.url}
                   alt={`Intro ${index + 1}`}
                   className={styles.thumbnailImage}
                 />
                 <button
                   type="button"
-                  onClick={() => removePicture(index)}
+                  onClick={() => removeIntroPicture(pic.id)}
                   className={styles.removeButton}
                 >
                   ×
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleEditImage(index)}
+                  className={styles.editButton}
+                >
+                  <Pencil size={16} />
                 </button>
               </div>
             ))}
@@ -114,6 +138,15 @@ const IntroMediaUpload = () => {
             이하
           </p>
         </div>
+      )}
+
+      {editingImageIndex !== null && (
+        <ImageEditor
+          image={formData.introPictures[editingImageIndex].url}
+          onImageEdit={handleImageEdit}
+          onClose={() => setEditingImageIndex(null)}
+          isInitialCrop={false}
+        />
       )}
     </div>
   );

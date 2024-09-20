@@ -1,9 +1,9 @@
-import useAuthStore from "../store/useAuthStore";
+import useDuckFundingAuthStore from "../store/useDuckFundingAuthStore";
 import styles from "./Favorites.module.css";
 import React from "react";
 
 const Favorites = () => {
-  const { user, logout } = useAuthStore((state) => ({
+  const { user, logout } = useDuckFundingAuthStore((state) => ({
     user: state.user,
     logout: state.logout,
   }));

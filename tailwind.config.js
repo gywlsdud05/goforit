@@ -1,13 +1,15 @@
 /** @type {import('tailwindcss').Config} */
-// './pages/**/*.{ts,tsx}',
-//'./components/**/*.{ts,tsx}',
-//'./app/**/*.{ts,tsx}',
-//'./src/**/*.{ts,tsx}',
+
 module.exports = {
   darkMode: ["class"],
   content: [
-    './src/components/ui/**/*.{js,jsx,ts,tsx}',
-    './src/pages/ProductWritePage.{js,jsx,ts,tsx}',
+    "./src/components/ui/**/*.{js,jsx,ts,tsx}",
+    "./src/pages/ProductWritePage.{js,jsx,ts,tsx}",
+
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./pages/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
@@ -36,4 +38,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+};

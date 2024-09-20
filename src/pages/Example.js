@@ -1,4 +1,4 @@
-import SlideComponent from "./SlideComponent";
+import SlideComponent from "./ImageSlider";
 import { Editor } from "@tinymce/tinymce-react";
 import { Star } from "lucide-react";
 import { useRef, useState } from "react";
